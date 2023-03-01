@@ -4,3 +4,8 @@ export function getCityAll(){
         url:'/city/all'
     })
 }
+export function getchCategories(){
+    return hyRequest.get({
+        url:'/home/categories'
+    })
+}

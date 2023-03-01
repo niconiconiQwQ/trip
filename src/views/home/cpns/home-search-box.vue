@@ -11,7 +11,7 @@
       </div>
     </div>
     <!-- 日期 -->
-    <div class="date-range" @click="showCalendar = true">
+    <div class="date-range bottom-gray-line" @click="showCalendar = true">
       <div class="start">
         <span class="tip">入住</span>
         <span class="time">{{ startDate }}</span>
@@ -32,13 +32,42 @@
       color="#ff9854"
       :round="false"
     />
+    <!-- 价格人数 -->
+    <div class="item price-counter bottom-gray-line">
+      <div class="start">价格不限</div>
+      <div class="end">人数不限</div>
+    </div>
+    <!-- 关键字 -->
+    <div class="item keyword bottom-gray-line">关键字/位置/民宿名</div>
+    <!-- 热门建议 -->
+    <div class="item hot-suggest">
+      <template v-for="(item, index) in hotSuggests" :key="index">
+        <div
+          class="suggest-item"
+          :style="{
+            color: item.tagText.color,
+            background: item.tagText.background.color,
+          }"
+        >
+          {{ item.tagText.text }}
+        </div>
+      </template>
+    </div>
+    <!-- 搜索按钮 -->
+    <div class="item search-btn">
+      <div class="btn" @click="searchClick">搜索</div>
+    </div>
   </div>
 </template>
 <script setup>
 import useCityStore from "@/store/modules/city";
 import { ref } from "vue";
+import { storeToRefs } from "pinia";
+import useHome from "@/store/modules/home";
 import { useRouter } from "vue-router";
 import { formatMonthDay, diffDate } from "@/utils/formatData";
+const homeStore = useHome();
+const { hotSuggests } = storeToRefs(homeStore);
 const cityStore = useCityStore();
 const router = useRouter();
 const showCalendar = ref(false);
@@ -62,6 +91,7 @@ const positionClick = () => {
 const cityClick = () => {
   router.push("/city");
 };
+
 // 日期相关变量
 const nowDate = new Date(); // 现在时间
 const newDate = new Date();
@@ -77,10 +107,37 @@ const onConfirm = (value) => {
   stayDays.value = diffDate(selectStart, selectEnd);
   showCalendar.value = false; // 隐藏日期
 };
+const searchClick = () => {
+  router.push({
+    path: "/search",
+    query: {
+      startDate: startDate.value,
+      endDate: endDate.value,
+      stayDays: stayDays.value,
+    },
+  });
+};
 </script>
 <style scoped lang="less">
 .search-box {
   --van-calendar-popup-height: 100%;
+}
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  height: 44px;
+  padding: 0 20px;
+  color: #999;
+  .start {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+  .end {
+    min-width: 30%;
+    padding-left: 20px;
+  }
 }
 .location {
   display: flex;
@@ -108,7 +165,7 @@ const onConfirm = (value) => {
 }
 .date-range {
   display: flex;
-  justify-content: space-evenly;
+  padding: 0 20px;
   border-bottom: 1px solid #f7f7f7;
   height: 44px;
   .start,
@@ -122,8 +179,35 @@ const onConfirm = (value) => {
     }
   }
   .stay {
-    margin: 0 50px;
+    margin: 0 70px;
     color: #666;
+  }
+}
+
+.hot-suggest {
+  margin: 10px 0;
+  height: auto;
+  .suggest-item {
+    padding: 4px 8px;
+    border-radius: 3px;
+    margin: 3px;
+    font-size: 12px;
+    line-height: 1;
+  }
+}
+.search-btn {
+  .btn {
+    width: 342px;
+    height: 38px;
+    font-size: 18px;
+    font-weight: 500;
+    max-height: 50px;
+    line-height: 38px;
+    text-align: center;
+    background-color: #ccc;
+    border-radius: 20px;
+    color: #fff;
+    background-image: var(--theme-linear-gradient);
   }
 }
 </style>
