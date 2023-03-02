@@ -14,14 +14,14 @@
     <div class="date-range bottom-gray-line" @click="showCalendar = true">
       <div class="start">
         <span class="tip">入住</span>
-        <span class="time">{{ startDate }}</span>
+        <span class="time">{{ startDateStr }}</span>
       </div>
       <div class="stay">
         <span>共{{ stayDays }}晚</span>
       </div>
       <div class="end">
         <span class="tip">离店</span>
-        <span class="time">{{ endDate }}</span>
+        <span class="time">{{ endDateStr }}</span>
       </div>
     </div>
     <van-calendar
@@ -61,11 +61,13 @@
 </template>
 <script setup>
 import useCityStore from "@/store/modules/city";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { storeToRefs } from "pinia";
 import useHome from "@/store/modules/home";
+import useMainStore from "@/store/modules/main";
 import { useRouter } from "vue-router";
-import { formatMonthDay, diffDate } from "@/utils/formatData";
+import { formatMonthDay, diffDate } from "@/utils/formatDate";
+const mainStore = useMainStore();
 const homeStore = useHome();
 const { hotSuggests } = storeToRefs(homeStore);
 const cityStore = useCityStore();
@@ -93,17 +95,15 @@ const cityClick = () => {
 };
 
 // 日期相关变量
-const nowDate = new Date(); // 现在时间
-const newDate = new Date();
-newDate.setDate(nowDate.getDate() + 1);
-const startDate = ref(formatMonthDay(nowDate)); // 格式化入住时间
-const endDate = ref(formatMonthDay(newDate)); // 格式化结束时间
-const stayDays = ref(diffDate(nowDate, newDate)); // 住多久
+const { startDate, endDate } = storeToRefs(mainStore);
+const startDateStr = computed(() => formatMonthDay(startDate.value)); // 格式化入住时间
+const endDateStr = computed(() => formatMonthDay(endDate.value)); // 格式化结束时间
+const stayDays = ref(diffDate(startDate.value, endDate.value)); // 住多久
 const onConfirm = (value) => {
   const selectStart = value[0];
   const selectEnd = value[1];
-  startDate.value = formatMonthDay(selectStart);
-  endDate.value = formatMonthDay(selectEnd);
+  startDate.value = selectStart;
+  endDate.value = selectEnd;
   stayDays.value = diffDate(selectStart, selectEnd);
   showCalendar.value = false; // 隐藏日期
 };
@@ -180,6 +180,7 @@ const searchClick = () => {
   }
   .stay {
     margin: 0 70px;
+    min-width: 70px;
     color: #666;
   }
 }
